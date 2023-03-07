@@ -1,5 +1,5 @@
 <header>
-<img src="https://i.imgur.com/MUaxMtA.png" style="width: 100%" alt="Application image"  />  
+<img src="https://i.imgur.com/MUaxMtA.png" style="width: 50%, height:50%" alt="Application image"  />  
 <header/>
 
 # 🏠Shipment Monitoring System
