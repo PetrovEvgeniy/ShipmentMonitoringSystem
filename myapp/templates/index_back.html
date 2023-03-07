@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  
+    <!-- To prepare django for loading static files -->
+    {%load staticfiles %}
+
+    <title>Weather Station</title>
+
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+
+    <link rel="shortcut icon" href="{%  static 'img/favicon.ico' %}">
+    <link href={% static "css/bootstrap-responsive.css" %} rel="stylesheet">
+
+    <!-- needed to integrate OpenLayer 5.x -->
+    <link rel="stylesheet" href="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/css/ol.css" type="text/css">
+   
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+
+    <!-- needed to integrate OpenLayer 5.x -->
+    <script src="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/build/ol.js"></script>
+
+  </head>
+
+
+  <body>
+	
+    <div class="container">
+
+    
+	<div class="row">
+	  <div class="span10"> <center><h1>Weather Station</h1></center> </div>
+	</div>
+
+	<div class='row'>
+	  <div class="span2"><h3>Name:</h3></div>
+	  <div class="span2"><h3>Raspberry</h3></div>
+	</div>
+    
+	<div class='row'>
+	  
+	  <div class="span4" style="height:435px">
+		<div class='row'>
+		  <div class="span2"><h4>Temperature:</h4></div>
+	  	  <div class="span2"><h4 id='temperature'>{{temperature}} deg.</h4></div>
+		   <br>
+	  	  <div class="span2"><h4>Humidity:</h4></div>
+	  	  <div class="span2"><h4 id='humidity'>{{humidity}} %</h4></div>
+	  	  <div class="span2"><h4>AccelX:</h4></div>
+	  	  <div class="span2"><h4 id='accelX'>{{accelX}} </h4></div>
+	  	  <div class="span2"><h4>AccelY:</h4></div>
+	  	  <div class="span2"><h4 id='accelY'>{{accelY}} </h4></div>
+	  	  <div class="span2"><h4>AccelZ:</h4></div>
+	  	  <div class="span2"><h4 id='accelZ'>{{accelZ}} </h4></div>
+	  	  	  	  <div class="span2"><h4>Longitude:</h4></div>
+	  	  <div class="span2"><h4 id='lon'>{{lon}} </h4></div>
+	  	  	  	  <div class="span2"><h4>Latitude:</h4></div>
+	  	  <div class="span2"><h4 id='lat'>{{lat}} </h4></div>
+		</div>
+	  </div>
+
+          <div class="span6" style="height:435px">
+	     <div id="map"></div>
+	  </div>
+
+	</div>
+   
+
+    </div>
+ 
+    <script type="text/javascript">
+      
+      /* ---> needed for Google Maps API intergration */
+      
+      var map;
+      var latlng;
+      function initMap() {
+        latlng = new google.maps.LatLng({{lat}},{{lon}});
+	var settings = {
+		zoom: 8,
+		center: latlng,
+		mapTypeControl: false,
+		mapTypeControlOptions: { style: google.maps.MapTypeControlStyle.DROPDOWN_MENU, navigationControl: true},
+		navigationControlOptions: { style: google.maps.NavigationControlStyle.SMALL, mapTypeId: google.maps.MapTypeId.TERRAIN}
+      };
+      map = new google.maps.Map(document.getElementById('map'), settings);
+      var marker = new google.maps.Marker({position: latlng, map: map, title:"Raspberry"});
+      }
+      
+      /* <--- end of Google Maps API integration */
+
+      /* ---> needed to integrate OpenLayer 5.x 
+      var map = new ol.Map({
+          target: 'map',
+	  layers: [
+	      new ol.layer.Tile({
+	          source: new ol.source.OSM()
+	      })
+	  ],
+	      view: new ol.View({
+	          center: ol.proj.fromLonLat([{{lon}},{{lat}}]),
+	          zoom: 10
+	      })
+      });
+	      
+	      
+      var marker = new ol.Feature({
+           geometry: new ol.geom.Point(
+	           ol.proj.fromLonLat([{{lon}},{{lat}}])
+	       ),  // Actual coordinates of the weather station
+       });
+	       
+	       
+       marker.setStyle(new ol.style.Style({
+           image: new ol.style.Icon(({
+	        color: '#ffcd46',
+	        crossOrigin: 'anonymous',
+	        src: 'https://openlayers.org/en/v5.3.0/examples/data/dot.png'
+            }))
+       }));
+	       
+       var vectorSource = new ol.source.Vector({
+	        features: [marker]
+       });
+	           
+	   var markerVectorLayer = new ol.layer.Vector({
+	          source: vectorSource,
+	     });
+	   map.addLayer(markerVectorLayer)
+	    <--- end of OpenLayers integration */
+
+    </script>
+
+    
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqkck3fHvArM8Zu6gBtJFWS3Hdb1F35jA&callback=initMap" async defer>
+    </script>
+  
+
+  </body>
+</html>
+
+

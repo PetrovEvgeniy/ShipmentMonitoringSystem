@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  
+	<!-- To prepare django for loading static files -->
+    {%load staticfiles %}
+
+	<!-- Include the jQuery, Paho MQtt client and BootstrapToggle libraries -->
+	<script src="{% static "js/jquery-3.2.1.min.js" %}"></script>
+	<script src="{% static "js/mqttws31.js"         %}"></script>
+	<script src="{% static "js/bootstrap-toggle.js" %}"></script>
+
+	<title>Shipment Monitoring System</title>
+
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+
+	<!-- Include the required bootstrap css files -->
+	<link href={% static "css/bootstrap-responsive.css" %} rel="stylesheet">
+	<link href={% static "css/bootstrap-toggle.css" %} rel="stylesheet">
+	
+    <!-- needed to integrate OpenLayer 5.x -->
+    <link rel="stylesheet" href="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/css/ol.css" type="text/css">	
+   
+    <style>
+		/* Always set the map height explicitly to define the size of the div
+		* element that contains the map. */
+		#map {
+			height: 100%;
+		}
+		/* Optional: Makes the sample page fill the window. */
+		html, body {
+			height: 100%;
+			margin: 0;
+			padding: 0;
+		}
+    </style>
+	
+    <!-- needed to integrate OpenLayer 5.x -->
+    <script src="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/build/ol.js"></script>
+	
+	<script type="text/javascript">
+        
+	// MQTT connection parameters
+	var MQTT_Server = "127.0.0.1";
+	var MQTT_WebSocketsPort = 9001;
+	var MQTT_ClientID = "UbuntuHost";
+        
+	// Create a client instance
+	var client = new Paho.MQTT.Client(MQTT_Server, Number(MQTT_WebSocketsPort), MQTT_ClientID);
+	
+	var options = {
+		// connection attempt timeout in seconds
+		timeout: 3,
+		// use MQTT version 4
+		mqttVersion: 4,
+		cleanSession: true,
+		onSuccess: onConnect
+	}		
+
+	var payloadLedOn  = { "Led": "On" };
+	var payloadLedOff = { "Led": "Off"};
+	var stateLedOff   = "Off";
+	var stateLedOn	  = "On";
+	
+	var piLedActuatorTopic    = "pi/43/actuators/led";
+	var piLedActuatorTopicSet = "pi/43/actuators/led/set";
+	var piLedActuatorTopicGet = "pi/43/actuators/led/get";
+	var piSensorBaseTopic     = "pi/43/sensors";
+	var piTempAndHumidSensor  = "pi/43/sensors/temphumid";
+	var piAccelAndGyroSensor  = "pi/43/sensors/accelgyro";
+
+	// Set callback handlers
+	client.onConnectionLost = onConnectionLost;
+	client.onMessageArrived = onMessageArrived;
+
+	// Called when the client loses its connection
+	function onConnectionLost(responseObject) {
+		if (responseObject.errorCode !== 0) {
+			console.log("onConnectionLost:" + responseObject.errorMessage);
+		}
+	}
+
+	// Handles the acknowledge messages of the Raspberry PI
+	function handleArrivedMessage(topic, payload) {
+		switch(topic) {
+		case piLedActuatorTopicGet:
+			console.log("Known topic:" + topic);
+			var msg = JSON.parse(payload);
+			if (msg.Led == stateLedOff) {
+				console.log("Received Led state: " + msg.Led);
+				if ($('#toggle-status').prop('checked')) {
+					console.log("Assumed Led state: " + stateLedOn);
+					$('#state').html("inconsistent");
+				}
+				else {
+					console.log("Assumed Led state: " + stateLedOff);
+					$('#state').html("checked");
+				}
+			}
+			if (msg.Led == stateLedOn) {
+				console.log("Received Led state: " + msg.Led);
+				if (! $('#toggle-status').prop('checked')) {
+					console.log("Assumed Led state: " + stateLedOff);
+					$('#state').html("inconsistent");
+				}
+				else {
+					console.log("Assumed Led state: " + stateLedOn);
+					$('#state').html("checked");
+				}
+			}
+			break;
+		default:
+			console.log("Unknown message type: ");
+			break;
+	    }
+	}
+
+	// Called when a message arrives
+	function onMessageArrived(message) {
+		console.log("Message arrived: topic=" + message.destinationName + ", message=" + message.payloadString);
+		handleArrivedMessage(message.destinationName, message.payloadString)
+	}
+
+	// Called when the client connects
+	function onConnect() {
+		// Once a connection has been made, make a subscription and send a message.
+		console.log("onConnect...");
+		console.log("subscribing " + piLedActuatorTopicGet + " ...") 
+		client.subscribe(piLedActuatorTopicGet);
+		var payloadString = JSON.stringify(payloadLedOff);
+		var message = new Paho.MQTT.Message(payloadString);
+		message.destinationName = piLedActuatorTopicSet;
+		message.qos = 0;
+		console.log("publishing " +  payloadString + " ...");
+		client.send(message);
+	}
+
+	// connect the client
+	client.connect(options);
+
+	</script>
+  
+  </head>
+
+
+
+  <body>
+
+	
+    <div class="container">
+
+    
+	<div class="row">
+	  <div class="span10"> <center><h1>Shipment Monitoring System</h1></center> </div>
+	</div>
+
+	<div class='row'>
+	  <div class="span2"><h3>Name:</h3></div>
+	  <div class="span2"><h3>Raspberry</h3></div>
+	  <div class="span1"><h3>State: </h3></div>
+	  <div class="span1"><h3><input type=checkbox id="toggle-status"></h3></div>
+   		<script type="text/javascript">
+			var msg;
+			var plString;
+			$(function() {
+				$('#toggle-status').bootstrapToggle({
+					on: 'On',
+					off: 'Off'
+				});
+			});
+			$(function() {
+				$('#toggle-status').change(function() {
+					console.log("State changed: " +  $(this).prop('checked') );
+					if ( $(this).prop('checked') ) {
+						plString = JSON.stringify(payloadLedOn);
+						msg = new Paho.MQTT.Message(plString);
+						msg.destinationName = piLedActuatorTopicSet;
+						msg.qos = 0;
+						console.log("Publishing: " + plString + " ...");
+						client.send(msg);
+					}
+					else {
+						plString = JSON.stringify(payloadLedOff);
+						msg = new Paho.MQTT.Message(plString);
+						msg.destinationName = piLedActuatorTopicSet;
+						msg.qos = 0;
+						console.log("Publishing: " + plString + " ...");
+						client.send(msg);
+					}
+							
+				});
+			});
+		</script>
+	  <div class="span4"><h3 id="state">Actual state requested...</h3></div>
+	</div>
+    
+	<div class='row'>
+	  
+	  <div class="span4" style="height:435px">
+		<div class='row'>
+		  <div class="span2"><h4>Creation Date:</h4></div>
+	  	  <div class="span2"><h4 id='creationDate'>{{creationDate}} </h4></div>
+		   <br>		
+		  <div class="span2"><h4>Temperature:</h4></div>
+	  	  <div class="span2"><h4 id='temperature'>{{temperature}} deg.</h4></div>
+		   <br>
+	  	  <div class="span2"><h4>Humidity:</h4></div>
+	  	  <div class="span2"><h4 id='humidity'>{{humidity}} %</h4></div>
+		   <br>
+	  	  <div class="span2"><h4>Accel X:</h4></div>
+	  	  <div class="span2"><h4 id='accelx'>{{accelX}} m/s*s</h4></div>
+			<br>
+	  	  <div class="span2"><h4>Accel Y:</h4></div>
+	  	  <div class="span2"><h4 id='accely'>{{accelY}} m/s*s</h4></div>
+		   <br>
+	  	  <div class="span2"><h4>Accel Z:</h4></div>
+	  	  <div class="span2"><h4 id='accelz'>{{accelZ}} m/s*s</h4></div>
+		   <br>
+	  	  <div class="span2"><h4>Longitude:</h4></div>
+	  	  <div class="span2"><h4 id='longitude'>{{lon}} deg.</h4></div>
+		   <br>	
+	  	  <div class="span2"><h4>Latitude:</h4></div>
+	  	  <div class="span2"><h4 id='latitude'>{{lat}} deg.</h4></div>	  	    	  	  	  
+		</div>
+	  </div>
+
+          <div class="span6" style="height:495px">
+	     <div id="map"></div>
+	  </div>
+
+	</div>
+   
+
+    </div>
+ 
+    <script type="text/javascript">
+      
+	  /* ---> needed for Google Maps API intergration */
+      /*
+      var map;
+      var latlng;
+      function initMap() {
+        latlng = new google.maps.LatLng({{lat}},{{lon}});
+		  var settings = {
+			zoom: 8,
+			center: latlng,
+			mapTypeControl: false,
+			mapTypeControlOptions: { style: google.maps.MapTypeControlStyle.DROPDOWN_MENU, navigationControl: true},
+			navigationControlOptions: { style: google.maps.NavigationControlStyle.SMALL, mapTypeId: google.maps.MapTypeId.TERRAIN}
+		  };
+		map = new google.maps.Map(document.getElementById('map'), settings);
+		var marker = new google.maps.Marker({position: latlng, map: map, title:"Raspberry"});
+      }
+      */
+      /* <--- end of Google Maps API integration */
+
+      /* ---> needed to integrate OpenLayer 5.x */
+      var map = new ol.Map({
+          target: 'map',
+		  layers: [
+			  new ol.layer.Tile({
+				  source: new ol.source.OSM()
+			  })
+		  ],
+	      view: new ol.View({
+	          center: ol.proj.fromLonLat([{{lon}},{{lat}}]),
+	          zoom: 10
+	      })
+      });
+	      
+      var marker = new ol.Feature({
+           geometry: new ol.geom.Point(
+	           ol.proj.fromLonLat([{{lon}},{{lat}}])
+	       ),  // Actual coordinates of the weather station
+       });
+	       
+       marker.setStyle(new ol.style.Style({
+           image: new ol.style.Icon(({
+	        color: '#ffcd46',
+	        crossOrigin: 'anonymous',
+	        src: 'https://openlayers.org/en/v5.3.0/examples/data/dot.png'
+            }))
+       }));
+	       
+       var vectorSource = new ol.source.Vector({
+	        features: [marker]
+       });
+	           
+	   var markerVectorLayer = new ol.layer.Vector({
+	          source: vectorSource,
+	     });
+	   map.addLayer(markerVectorLayer)
+	   /* <--- end of OpenLayers integration */
+
+    </script>
+
+    <!-- needed for GoogleMaps API
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=InsertGoogleMapsJavaScriptApiKey&callback=initMap" async defer>
+    </script>
+    -->
+
+    </script>
+
+  </body>
+</html>
+
+
