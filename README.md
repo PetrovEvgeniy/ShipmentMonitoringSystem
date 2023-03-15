@@ -18,7 +18,7 @@ OpenStreet API (https://wiki.openstreetmap.org)
 ## Project Architecture
 <img src="https://i.imgur.com/OG88lkn.png" style="width: 30%, height:30%" alt="Project Architecture"  /> 
 
-##Final result 
+## Final result 
 <img src="https://i.imgur.com/MUaxMtA.png" style="width: 30%, height:30%" alt="Application image"  />  
 
 ## ⚠️DISCLAIMER please do not use the featured API WRITE/READ keys 
