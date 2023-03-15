@@ -1,5 +1,9 @@
 # 🛰️Shipment Monitoring System
 Shipment Monitoring System was a team laboratory project that was part of the course "Internet of Things (IoT)" at THU. (2022)
+
+# Participants:
+- Evgeniy Petrov (me)
+- Stanislav Dolapchiev 
   
 ## 💡Main Functionality (Raspbery PI)
 - Collects sensor data (GPS, temperature, humidity, x-y-z acceleration) from Raspbery PI device, 
