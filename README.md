@@ -3,7 +3,7 @@ Shipment Monitoring System was a team laboratory project that was part of the co
 
 # Participants:
 - Evgeniy Petrov (me)
-- Stanislav Dolapchiev 
+- Stanislav Dolapchiev (https://github.com/stani3)
   
 ## 💡Main Functionality (Raspbery PI)
 - Collects sensor data (GPS, temperature, humidity, x-y-z acceleration) from Raspbery PI device, 
