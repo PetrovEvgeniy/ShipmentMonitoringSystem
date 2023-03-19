@@ -2,7 +2,7 @@
 Shipment Monitoring System was a team laboratory project that was part of the course "Internet of Things (IoT)" at THU. (2022)
 
 # Participants:
-- Evgeniy Petrov (me)
+- Evgeniy Petrov (https://github.com/PetrovEvgeniy)
 - Stanislav Dolapchiev (https://github.com/stani3)
   
 ## 💡Main Functionality (Raspbery PI)
