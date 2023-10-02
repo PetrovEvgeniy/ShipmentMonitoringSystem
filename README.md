@@ -1,5 +1,5 @@
 # 🛰️Shipment Monitoring System
-Shipment Monitoring System was a team laboratory project that was part of the course "Internet of Things (IoT)" at THU. (2022)
+Shipment Monitoring System was a team laboratory project that was part of the course "Internet of Things (IoT)" at the Technische Hochschule Ulm. (2022)
 
 # Participants:
 - Evgeniy Petrov (https://github.com/PetrovEvgeniy)
